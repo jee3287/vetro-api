@@ -3,8 +3,9 @@
 namespace app\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Functions\Gets;
-use App\Functions\Posts;
+use App\Functions\Get;
+use App\Functions\Post;
+use App\Functions\Patch;
 
 
 require 'vendor/autoload.php';
@@ -50,6 +51,10 @@ class Vetro extends Command
                 $response = $this->postRequests($apiName, $requestMethod);
             } elseif ($requestMethod == 'GET') {
                 $response = $this->getRequests($apiName, $requestMethod);
+            } elseif ($requestMethod == 'PATCH') {
+                $response = $this->patchRequests($apiName, $requestMethod);
+            } else {
+                dd("Please enter a valid request type");
             }
             /*
             foreach ($response as $key => $value) {
@@ -98,7 +103,7 @@ class Vetro extends Command
         $response = json_decode($response, true);
         
         curl_close($curl);
-        dd($response);
+        //dd($response);
     
         return $response;
     
@@ -107,7 +112,7 @@ class Vetro extends Command
     //** handle post requests redirection */
     public function postRequests($apiName) {
 
-        $api = new Posts; //dd($api);
+        $api = new Post; //dd($api);
         $postResult = $api->{$apiName}();
 
         return $postResult;
@@ -116,7 +121,16 @@ class Vetro extends Command
     //** handle get requests redirection */
     public function getRequests($apiName) {
 
-        $api = new Gets; //dd($api);
+        $api = new Get; //dd($api);
+        $getResult = $api->{$apiName}();
+
+        return $getResult;
+    }
+
+    //** handle patches requests redirection */
+    public function patchRequests($apiName) {
+
+        $api = new Patch; //dd($api);
         $getResult = $api->{$apiName}();
 
         return $getResult;

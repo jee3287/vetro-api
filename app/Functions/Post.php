@@ -4,9 +4,12 @@ namespace app\Functions;
 
 use Illuminate\Support\Facades\Storage;
 use app\Console\Commands\Vetro;
+use App\Functions\Search;
+use App\Functions\Get;
+use App\Functions\Partials\Helpers;
 use Log;
 
-class Posts {
+class Post {
 
     protected $data;
     /*
@@ -16,9 +19,10 @@ class Posts {
 
     }
     */
+    protected $requestMethod = 'POST';
 
     public function features() {
-        
+        //CREATE FEATURES endpoint by name, hand off to process() for consumption
         return $this->process();
     }
 
@@ -35,14 +39,14 @@ class Posts {
 
         }       
         fclose($file);
-        $array = $this->buildJSON($array);
+        $array = $this->featuresArray($array);
 
 
         return $array;
 
     }
 
-    protected function buildJSON($data) {
+    protected function featuresArray($data) {
 
         $apiName = 'features';
         $requestMethod = 'POST';
@@ -56,6 +60,10 @@ class Posts {
         $build = 'Yes';
         $dropType = 'Underground';
         $buildingType = 'Residential';
+
+        $partials = new Helpers();
+        $partials = $partials->buildJSON($x_vetro['layer_id']);
+        
 
         foreach ($data as $key => &$value) {
             $records[$key]['type'] = $bodyType;
@@ -75,7 +83,38 @@ class Posts {
         $curl = $curl->curlAPI($apiName, $requestMethod, $newData);
         
     }
+
+
+    public function featuresQuery() {
+
+        //$layer = "\"Lateral\"";
+        //$layer = 2;
+        $ID = "\"150973\"";
+        $planID = "8, 6";
+        $layerID = 44;
+        
+        $apiName = "features/query?offset=0&limit=100&plan_ids={$planID}&layer_ids={$layerID}";//filter=ID={$ID}";
+        
+        //dd($request);
+
+        return Vetro::curlAPI($apiName, $this->requestMethod);
+       
+    }
+
+    public function search() {
+
+        return Search::search([8], "ID=150973");
+    }
 	
+    public function polygonAddress() {
+
+        $address['address'] = '603 Pine Hollow Dr Gonzales, LA 70737';
+        $apiName = "features/polygon/intersection/address";
+
+        $data = json_encode($address);
+
+        return Vetro::curlAPI($apiName, $this->requestMethod, $data);
+    }
  
     
 

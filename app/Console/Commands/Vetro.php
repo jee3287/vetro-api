@@ -3,9 +3,9 @@
 namespace app\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Functions\Get;
-use App\Functions\Post;
-use App\Functions\Patch;
+use App\Functions\Gets;
+use App\Functions\Posts;
+use App\Functions\Patches;
 
 
 require 'vendor/autoload.php';
@@ -20,7 +20,8 @@ class Vetro extends Command
      */
     protected $signature = 'make:test-vetro-api
                             {apiName : the api endpoint name}; 
-                            {requestMethod : the request method}';
+                            {requestMethod : the request method};
+                            {args?* : the arguments (optional)}';
 
     /**
      * The console command description.
@@ -45,14 +46,15 @@ class Vetro extends Command
         {   
             $apiName = $this->argument('apiName');
             $requestMethod = $this->argument('requestMethod');
+            $args = $this->argument('args');
 
             //** split it up in post vs get vs other requests */
             if ($requestMethod == 'POST') {
-                $response = $this->postRequests($apiName, $requestMethod);
+                $response = $this->postRequests($apiName, $args);
             } elseif ($requestMethod == 'GET') {
-                $response = $this->getRequests($apiName, $requestMethod);
+                $response = $this->getRequests($apiName, $args);
             } elseif ($requestMethod == 'PATCH') {
-                $response = $this->patchRequests($apiName, $requestMethod);
+                $response = $this->patchRequests($apiName, $args);
             } else {
                 dd("Please enter a valid request type");
             }
@@ -110,27 +112,27 @@ class Vetro extends Command
     }
 
     //** handle post requests redirection */
-    public function postRequests($apiName) {
+    public function postRequests($apiName, $args) {
 
-        $api = new Post; //dd($api);
-        $postResult = $api->{$apiName}();
+        $api = new Posts; //dd($api);
+        $postResult = $api->{$apiName}($args);
 
         return $postResult;
     }
 
     //** handle get requests redirection */
-    public function getRequests($apiName) {
+    public function getRequests($apiName, $args) {
 
-        $api = new Get; //dd($api);
-        $getResult = $api->{$apiName}();
+        $api = new Gets; //dd($api);
+        $getResult = $api->{$apiName}($args);
 
         return $getResult;
     }
 
     //** handle patches requests redirection */
-    public function patchRequests($apiName) {
+    public function patchRequests($apiName, $args) {
 
-        $api = new Patch; //dd($api);
+        $api = new Patches; //dd($api);
         $getResult = $api->{$apiName}();
 
         return $getResult;

@@ -5,11 +5,11 @@ namespace app\Functions;
 use Illuminate\Support\Facades\Storage;
 use app\Console\Commands\Vetro;
 use App\Functions\Search;
-use App\Functions\Get;
+use App\Functions\Gets;
 use App\Functions\Partials\Helpers;
 use Log;
 
-class Post {
+class Posts {
 
     protected $data;
     /*
@@ -21,15 +21,15 @@ class Post {
     */
     protected $requestMethod = 'POST';
 
-    public function features() {
-        //CREATE FEATURES endpoint by name, hand off to process() for consumption
-        return $this->process();
+    public function features($action = '') {
+        //CREATE FEATURES endpoint by name, hand off to process() 
+        return $this->process($action);
     }
 
     //** process csv file and push array to buildJSON() */
-    protected function process() {
+    protected function process($action) {
 
-        $file = fopen("storage/app/address_import2.csv", "r");
+        $file = fopen("storage/app/address_import5.csv", "r");
         $data = fgetcsv($file, 1000, ",");
         $data = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $data);
 
@@ -39,48 +39,32 @@ class Post {
 
         }       
         fclose($file);
-        $array = $this->featuresArray($array);
-
+        $array = $this->featuresArray($array, $action);
 
         return $array;
 
     }
 
-    protected function featuresArray($data) {
+    protected function featuresArray($data, $action) {
 
         $apiName = 'features';
-        $requestMethod = 'POST';
+        //$requestMethod = 'POST';
 
         /** build array for the create features API */
         //instantiate data array 
 
         $bodyType = 'Feature';
         $geoType = 'Point';
-        $x_vetro = array("layer_id"=> 26, "plan_id"=>8);
-        $build = 'Yes';
-        $dropType = 'Underground';
-        $buildingType = 'Residential';
-
-        $partials = new Helpers();
-        $partials = $partials->buildJSON($x_vetro['layer_id']);
+        $x_vetro = array("layer_id"=> 26, "plan_id"=>6);
         
-
-        foreach ($data as $key => &$value) {
-            $records[$key]['type'] = $bodyType;
-            $records[$key]['x-vetro'] = $x_vetro;
-            $records[$key]['geometry']['type'] = $geoType;
-            $records[$key]['geometry']['coordinates'] = array((float) $value['longitude'], (float) $value['latitude']); 
-            $records[$key]['properties']['ID'] = $value['house_id'];
-            $records[$key]['properties']['Build'] = $build;
-            $records[$key]['properties']['Address'] = $value['address'];
-            $records[$key]['properties']['Drop Type'] = $dropType;
-            $records[$key]['properties']['Building Type'] = $buildingType;
-            $this->data['features'] = $records; //array_values($data);
-            $newData = json_encode($this->data , true);
-
-        } 
-        $curl = new Vetro();
-        $curl = $curl->curlAPI($apiName, $requestMethod, $newData);
+        $partials = new Helpers();
+        $partials = $partials->layer($data, $bodyType, $geoType, $x_vetro);
+        
+        if (! $action == 'data') {
+            $curl = new Vetro();
+            $curl = $curl->curlAPI($apiName, $this->requestMethod, $partials);
+        }
+        return $partials;
         
     }
 
@@ -92,6 +76,7 @@ class Post {
         $ID = "\"150973\"";
         $planID = "8, 6";
         $layerID = 44;
+        $body = '';
         
         $apiName = "features/query?offset=0&limit=100&plan_ids={$planID}&layer_ids={$layerID}";//filter=ID={$ID}";
         
@@ -106,9 +91,9 @@ class Post {
         return Search::search([8], "ID=150973");
     }
 	
-    public function polygonAddress() {
+    public function polygonAddress($args) {
 
-        $address['address'] = '603 Pine Hollow Dr Gonzales, LA 70737';
+        $address['address'] = $args[0]; //'603 Pine Hollow Dr Gonzales, LA 70737';
         $apiName = "features/polygon/intersection/address";
 
         $data = json_encode($address);

@@ -9,11 +9,11 @@ use App\Functions\Gets;
 use Log;
 
 
-class Patch {
+class Patches {
 
     protected $data;
 
-    public function features() {
+    public function featuresUpdateSvcLocation() {
 
         $apiName = 'features';
         $requestMethod = 'PATCH';

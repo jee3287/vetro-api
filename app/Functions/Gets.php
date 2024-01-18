@@ -55,22 +55,20 @@ class Gets {
 
     }
 
-    public function featuresQuery($args) {
+    public function featuresQuery($args = '') {
 
         //$ID = $args[0];  
-        $ID = "\"GNZL CO\"";
+        //$ID = "\"GNZL CO\"";
+        $ID = "\"150973\"";
         $address = str_replace (' ', '%20','603 Pine Hollow Dr Gonzales, LA');
-        $planID = (int) 6;
+        $planID =   '8,6,32'; 
         $layerID = (int) 26;
         
-        $apiName = "features/query?offset=0&limit=2&plan_ids={$planID}&layer_ids={$layerID}";
+        $apiName = "features/query?offset=0&limit=200&plan_ids={$planID}&layer_ids={$layerID}";
         $request = Vetro::curlAPI($apiName, $this->requestMethod);
 
-        $vetroId = new Helpers();
-        $vetroId  = $vetroId->vetro_id($request);
-        dd(json_encode($vetroId));
-
-        //return 
+        dd($request);
+        return $request; 
        
     }
 
@@ -87,7 +85,7 @@ class Gets {
 
     public function features() {
 
-        $x_vetro_id = '46ce7861-b8f3-425f-8d37-6552148a96f2';
+        $x_vetro_id = '5343aae4-6771-4275-a876-ab9fc1f2cc90';
         $apiName = "features/{$x_vetro_id}";
         
         return Vetro::curlAPI($apiName, $this->requestMethod);

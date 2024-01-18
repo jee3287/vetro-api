@@ -22,40 +22,23 @@ class Posts {
     protected $requestMethod = 'POST';
 
     public function features($action = '') {
+
         //CREATE FEATURES endpoint by name, hand off to process() 
-        return $this->process($action);
-    }
-
-    //** process csv file and push array to buildJSON() */
-    protected function process($action) {
-
-        $file = fopen("storage/app/address_import5.csv", "r");
-        $data = fgetcsv($file, 1000, ",");
-        $data = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $data);
-
-        $array = [];
-        while (($row = fgetcsv($file, 500, ",")) !== false) {
-            $array[] = array_combine($data, $row);
-
-        }       
-        fclose($file);
-        $array = $this->featuresArray($array, $action);
-
-        return $array;
+        $processCsvFeatures = new Helpers();
+        $processCsvFeatures = $processCsvFeatures->processCSV($action);
+        return $processCsvFeatures;
 
     }
+
 
     protected function featuresArray($data, $action) {
 
         $apiName = 'features';
-        //$requestMethod = 'POST';
 
         /** build array for the create features API */
-        //instantiate data array 
-
         $bodyType = 'Feature';
         $geoType = 'Point';
-        $x_vetro = array("layer_id"=> 26, "plan_id"=>6);
+        $x_vetro = array("layer_id"=> 26, "plan_id"=>36);
         
         $partials = new Helpers();
         $partials = $partials->layer($data, $bodyType, $geoType, $x_vetro);
@@ -77,8 +60,8 @@ class Posts {
         $planID = "8, 6";
         $layerID = 44;
         $body = '';
-        
-        $apiName = "features/query?offset=0&limit=100&plan_ids={$planID}&layer_ids={$layerID}";//filter=ID={$ID}";
+        dd($ID);
+        $apiName = "features/query?offset=0&limit=100&plan_ids={$planID}&layer_ids={$layerID}=filter=ID={$ID}";
         
         //dd($request);
 
@@ -99,6 +82,24 @@ class Posts {
         $data = json_encode($address);
 
         return Vetro::curlAPI($apiName, $this->requestMethod, $data);
+    }
+
+
+    public function networkGeograph($args) {
+
+        $get_vetro_id = new Gets();
+        $get_vetro_id = $get_vetro_id->featuresQuery('');
+        $translate_vetro_id = new Helpers();
+        $translate_vetro_id = $translate_vetro_id->vetro_id($get_vetro_id);
+        //dd($translate_vetro_id);
+        $apiName = "network/geograph/{$translate_vetro_id}";
+
+        $curl = new Vetro();
+        $curl = $curl->curlAPI($apiName, $this->requestMethod);
+
+        
+        dd($curl);
+
     }
  
     
